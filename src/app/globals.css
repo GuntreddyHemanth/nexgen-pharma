@@ -158,6 +158,24 @@
   }
 }
 
+@layer components {
+  .prose-nx { color: var(--color-muted); font-size: 1.0625rem; line-height: 1.8; }
+  .prose-nx > * + * { margin-top: 1.1em; }
+  .prose-nx h2 { color: var(--color-ink); font-size: 1.6rem; font-weight: 700; line-height: 1.25; margin-top: 2em; }
+  .prose-nx h3 { color: var(--color-ink); font-size: 1.25rem; font-weight: 700; margin-top: 1.6em; }
+  .prose-nx strong { color: var(--color-ink); }
+  .prose-nx a { color: var(--color-brand-600); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .prose-nx ul, .prose-nx ol { padding-left: 1.4em; }
+  .prose-nx ul { list-style: disc; }
+  .prose-nx ol { list-style: decimal; }
+  .prose-nx li + li { margin-top: 0.4em; }
+  .prose-nx li::marker { color: var(--color-leaf-500); }
+  .prose-nx blockquote { border-left: 3px solid var(--color-leaf-400); padding-left: 1em; color: var(--color-ink); }
+  .prose-nx img { border-radius: 1rem; }
+  .prose-nx table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  .prose-nx th, .prose-nx td { border: 1px solid var(--color-line); padding: 0.5em 0.75em; text-align: left; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

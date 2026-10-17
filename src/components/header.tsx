@@ -7,11 +7,11 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, ClipboardList, Menu, Phone, X } from "lucide-react";
 import { nav, site } from "@/lib/site";
-import { services } from "@/lib/services";
+import type { Service } from "@/lib/services";
 import { Icon } from "./icon";
 import { useRfq } from "./rfq-context";
 
-export function Header() {
+export function Header({ services }: { services: Pick<Service, "slug" | "title" | "icon" | "summary">[] }) {
   const pathname = usePathname();
   const { lines } = useRfq();
   const [scrolled, setScrolled] = useState(false);
@@ -44,6 +44,7 @@ export function Header() {
           <div className="flex items-center gap-5">
             <a href={`tel:${site.phones[0].tel}`} className="hover:text-brand-700">{site.phones[0].display}</a>
             <a href={`mailto:${site.email}`} className="hover:text-brand-700">{site.email}</a>
+            <Link href="/portal" className="font-semibold text-brand-700 hover:underline">Client login</Link>
           </div>
         </div>
       </div>
@@ -159,6 +160,9 @@ export function Header() {
                       {n.label}
                     </Link>
                   ))}
+                <Link href="/portal" className="rounded-xl px-2 py-2.5 text-lg font-semibold hover:bg-canvas">
+                  Client login
+                </Link>
                 <Link href="/rfq" className="rounded-xl px-2 py-2.5 text-lg font-semibold hover:bg-canvas">
                   Quote basket {lines.length > 0 && <span className="text-leaf-600">({lines.length})</span>}
                 </Link>

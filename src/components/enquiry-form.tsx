@@ -6,16 +6,25 @@ import { services } from "@/lib/services";
 import { whatsappLink } from "@/lib/site";
 import { useRfq } from "./rfq-context";
 
-const serviceOptions = [
-  ...services.map((s) => ({ value: s.slug, label: s.title })),
+const extraOptions = [
   { value: "materials", label: "Material supply" },
   { value: "catalogue", label: "Request material catalogue" },
   { value: "other", label: "Something else" },
 ];
+const defaultServiceOptions = services.map((s) => ({ value: s.slug, label: s.title }));
 
 type Status = { state: "idle" } | { state: "sending" } | { state: "error"; msg: string; fields?: string[] } | { state: "done"; ref?: string; delivered: boolean; wa: string };
 
-export function EnquiryForm({ kind = "enquiry", defaultService = "" }: { kind?: "enquiry" | "rfq"; defaultService?: string }) {
+export function EnquiryForm({
+  kind = "enquiry",
+  defaultService = "",
+  services: serviceList = defaultServiceOptions,
+}: {
+  kind?: "enquiry" | "rfq";
+  defaultService?: string;
+  services?: { value: string; label: string }[];
+}) {
+  const serviceOptions = [...serviceList, ...extraOptions];
   const { lines, clear } = useRfq();
   const [status, setStatus] = useState<Status>({ state: "idle" });
 

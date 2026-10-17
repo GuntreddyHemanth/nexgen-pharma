@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowRight, Search } from "lucide-react";
-import { categories } from "@/lib/catalog";
+import type { Category } from "@/lib/catalog";
 import { IconTile } from "./icon";
 import { AddToRfq } from "./add-to-rfq";
 
-export function CatalogBrowser() {
+export function CatalogBrowser({ categories }: { categories: Category[] }) {
   const [q, setQ] = useState("");
   const term = q.trim().toLowerCase();
 
@@ -18,7 +18,7 @@ export function CatalogBrowser() {
         .filter((i) => `${i.name} ${i.spec} ${c.title}`.toLowerCase().includes(term))
         .map((i) => ({ ...i, category: c.title })),
     );
-  }, [term]);
+  }, [term, categories]);
 
   return (
     <>

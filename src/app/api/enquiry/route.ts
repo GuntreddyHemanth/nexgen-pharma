@@ -1,21 +1,13 @@
 import { NextResponse } from "next/server";
 import { site } from "@/lib/site";
+import { q } from "@/lib/db";
+import { adminInbox, emailShell, esc, sendEmail } from "@/lib/email";
+import { getSetting } from "@/lib/db";
+import { signedLink } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
 type Item = { name: string; category: string; spec: string; qty: string; note: string };
-type Payload = {
-  kind: "enquiry" | "rfq";
-  name: string;
-  company: string;
-  email: string;
-  phone: string;
-  location?: string;
-  service?: string;
-  message?: string;
-  items?: Item[];
-  website?: string; // honeypot
-};
 
 // Best-effort per-instance rate limit: 5 submissions / 10 min / IP.
 const hits = new Map<string, number[]>();
@@ -28,14 +20,12 @@ function limited(ip: string) {
 }
 
 const str = (v: unknown, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
-const esc = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (limited(ip)) return NextResponse.json({ ok: false, error: "Too many requests. Please try again shortly." }, { status: 429 });
 
-  let body: Partial<Payload>;
+  let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
@@ -45,24 +35,23 @@ export async function POST(req: Request) {
   // Bots fill hidden fields; pretend success.
   if (str(body.website)) return NextResponse.json({ ok: true, delivered: true });
 
+  const kind = body.kind === "rfq" ? "rfq" : body.kind === "catalogue" ? "catalogue" : "enquiry";
   const data = {
-    kind: body.kind === "rfq" ? "rfq" : "enquiry",
+    kind,
     name: str(body.name, 100),
     company: str(body.company, 150),
     email: str(body.email, 150),
     phone: str(body.phone, 30),
     location: str(body.location, 150),
-    service: str(body.service, 100),
+    service: kind === "catalogue" ? "Catalogue download" : str(body.service, 100),
     message: str(body.message, 4000),
-    items: Array.isArray(body.items)
-      ? body.items.slice(0, 100).map((i) => ({
-          name: str(i?.name, 200),
-          category: str(i?.category, 100),
-          spec: str(i?.spec, 200),
-          qty: str(i?.qty, 30),
-          note: str(i?.note, 300),
-        }))
-      : [],
+    items: (Array.isArray(body.items) ? body.items : []).slice(0, 100).map((i: Partial<Item>) => ({
+      name: str(i?.name, 200),
+      category: str(i?.category, 100),
+      spec: str(i?.spec, 200),
+      qty: str(i?.qty, 30),
+      note: str(i?.note, 300),
+    })),
   };
 
   const errors: string[] = [];
@@ -70,14 +59,36 @@ export async function POST(req: Request) {
   if (data.company.length < 2) errors.push("company");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.push("email");
   if (data.phone.replace(/\D/g, "").length < 10) errors.push("phone");
-  if (data.kind === "rfq" && data.items.length === 0) errors.push("items");
-  if (errors.length) return NextResponse.json({ ok: false, error: "Please check the highlighted fields.", fields: errors }, { status: 422 });
+  if (kind === "rfq" && data.items.length === 0) errors.push("items");
+  if (errors.length)
+    return NextResponse.json({ ok: false, error: "Please check the highlighted fields.", fields: errors }, { status: 422 });
 
   const ref = `NX-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+
+  let stored = false;
+  try {
+    await q(
+      `insert into leads (ref, kind, name, company, email, phone, location, service, message, items)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [ref, kind, data.name, data.company, data.email, data.phone, data.location, data.service, data.message, JSON.stringify(data.items)],
+    );
+    stored = true;
+  } catch (e) {
+    console.error("[enquiry] could not store lead", ref, (e as Error).message, JSON.stringify(data));
+  }
+
+  let download: string | undefined;
+  if (kind === "catalogue") {
+    try {
+      if (await getSetting("catalogue_file_id")) download = `/api/catalogue?t=${encodeURIComponent(signedLink("catalogue", 3600))}`;
+    } catch {}
+  }
+
+  const label = kind === "rfq" ? "RFQ" : kind === "catalogue" ? "Catalogue request" : "Enquiry";
   const subject =
-    data.kind === "rfq"
+    kind === "rfq"
       ? `RFQ ${ref}: ${data.items.length} item(s) from ${data.company}`
-      : `Enquiry ${ref}: ${data.service || "General"} from ${data.company}`;
+      : `${label} ${ref}: ${data.service || "General"} from ${data.company}`;
 
   const rows = [
     ["Name", data.name],
@@ -100,40 +111,15 @@ export async function POST(req: Request) {
         .join("")}</table>`
     : "";
 
-  const html = `<div style="font-family:Arial,sans-serif;color:#0b1630;max-width:680px">
-    <h2 style="color:#1a3f9c;margin:0 0 4px">${esc(subject)}</h2>
-    <p style="color:#55607a;margin:0 0 16px">Submitted via ${esc(site.url)}</p>
-    <table style="border-collapse:collapse">${rows}</table>
-    ${data.message ? `<h3 style="margin:24px 0 8px">Message</h3><p style="white-space:pre-wrap">${esc(data.message)}</p>` : ""}
-    ${itemsTable}
-  </div>`;
+  const html = emailShell(
+    subject,
+    `<p style="color:#55607a;margin:0 0 16px">Submitted via ${esc(site.url)}${stored ? ` · <a href="${esc(site.url)}/admin/leads">open in admin</a>` : ""}</p>
+     <table style="border-collapse:collapse">${rows}</table>
+     ${data.message ? `<h3 style="margin:24px 0 8px">Message</h3><p style="white-space:pre-wrap">${esc(data.message)}</p>` : ""}
+     ${itemsTable}`,
+  );
 
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.info("[enquiry] RESEND_API_KEY not set; logging submission", ref, JSON.stringify(data));
-    return NextResponse.json({ ok: true, delivered: false, ref });
-  }
+  const delivered = await sendEmail({ to: adminInbox(), subject, html, replyTo: data.email });
 
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.ENQUIRY_FROM ?? "Nexgen Website <onboarding@resend.dev>",
-        to: (process.env.ENQUIRY_TO ?? site.email).split(",").map((s) => s.trim()),
-        reply_to: data.email,
-        subject,
-        html,
-      }),
-    });
-    if (!res.ok) {
-      console.error("[enquiry] Resend error", res.status, await res.text());
-      return NextResponse.json({ ok: true, delivered: false, ref });
-    }
-  } catch (e) {
-    console.error("[enquiry] send failed", e);
-    return NextResponse.json({ ok: true, delivered: false, ref });
-  }
-
-  return NextResponse.json({ ok: true, delivered: true, ref });
+  return NextResponse.json({ ok: true, delivered: delivered || stored, ref, download });
 }

@@ -2,10 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { site } from "@/lib/site";
-import { services } from "@/lib/services";
-import { categories } from "@/lib/catalog";
+import { getCategories, getServices } from "@/lib/content";
 
-export function Footer() {
+export async function Footer() {
+  const [services, categories] = await Promise.all([getServices(), getCategories()]);
   return (
     <footer className="relative overflow-hidden bg-brand-950 text-brand-100/75">
       <div className="bg-grid absolute inset-0 opacity-60 [mask-image:linear-gradient(to_bottom,black,transparent)]" />
@@ -77,6 +77,9 @@ export function Footer() {
         <div className="container-x flex flex-col gap-2 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} {site.name}. All rights reserved.</p>
           <div className="flex gap-5">
+            <Link href="/gallery" className="hover:text-white">Gallery</Link>
+            <Link href="/insights" className="hover:text-white">Insights</Link>
+            <Link href="/portal" className="hover:text-white">Client login</Link>
             <Link href="/privacy" className="hover:text-white">Privacy</Link>
             <Link href="/contact" className="hover:text-white">Contact</Link>
           </div>
