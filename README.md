@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nexgen Pharma Enterprises: Website
 
-## Getting Started
+Next.js 15 · TypeScript · Tailwind CSS v4 · Motion. Static pages plus one API route (`/api/enquiry`).
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # production build check
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Where to edit content
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| What | File |
+|---|---|
+| Phone, email, WhatsApp, address, hours, clusters | `src/lib/site.ts` |
+| Services (text, scope, deliverables, FAQs) | `src/lib/services.ts` |
+| Materials catalogue (categories & items) | `src/lib/catalog.ts` |
+| Logo / icons | `public/brand/logo.png`, `src/app/icon.png` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables (Vercel → Project → Settings → Environment Variables)
 
-## Learn More
+| Name | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Live URL, e.g. `https://nexgenpharma.in` (used for SEO, sitemap) |
+| `RESEND_API_KEY` | Enables enquiry/RFQ emails (free at resend.com). Without it, forms still work and offer WhatsApp hand-off. |
+| `ENQUIRY_TO` | Inbox for leads (comma-separated). Defaults to the Gmail in `site.ts`. |
+| `ENQUIRY_FROM` | Sender, e.g. `Nexgen Website <website@nexgenpharma.in>` (after verifying the domain in Resend). |
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy to Vercel (free)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx vercel login
+npx vercel --prod      # run inside this folder; accept defaults
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Or push to GitHub and import the repo at vercel.com/new.
 
-## Deploy on Vercel
+## Custom domain (GoDaddy)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Buy the domain on GoDaddy. **Skip** GoDaddy's SSL and "website security" add-ons: Vercel issues free, auto-renewing HTTPS.
+2. Vercel → Project → Settings → Domains → add `nexgenpharma.in` and `www.nexgenpharma.in`.
+3. GoDaddy → DNS: `A @ 76.76.21.21` and `CNAME www cname.vercel-dns.com` (use the exact values Vercel shows).
+4. Business email: Zoho Mail (free tier) or Google Workspace. Add their MX/TXT records in GoDaddy DNS. Then verify the domain in Resend and set `ENQUIRY_FROM`.
+5. Set `NEXT_PUBLIC_SITE_URL` to the new domain and redeploy. Submit `/sitemap.xml` in Google Search Console.
