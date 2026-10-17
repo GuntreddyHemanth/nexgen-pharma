@@ -5,14 +5,17 @@ import { services as seedServices } from "./services";
 type Row = Record<string, unknown>;
 type Runner = (text: string, params?: unknown[]) => Promise<Row[]>;
 
+// Vercel's Neon integration provides DATABASE_URL and/or POSTGRES_URL.
+const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
 /** True when running on Vercel without a database configured. */
-export const dbMissing = !process.env.DATABASE_URL && !!process.env.VERCEL;
-export const dbIsLocal = !process.env.DATABASE_URL;
+export const dbMissing = !dbUrl && !!process.env.VERCEL;
+export const dbIsLocal = !dbUrl;
 
 let runnerPromise: Promise<Runner> | null = null;
 
 async function createRunner(): Promise<Runner> {
-  const url = process.env.DATABASE_URL;
+  const url = dbUrl;
   if (url) {
     const { neon } = await import("@neondatabase/serverless");
     const sql = neon(url);
