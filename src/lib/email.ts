@@ -18,7 +18,7 @@ export async function sendEmail(opts: { to: string[]; subject: string; html: str
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.ENQUIRY_FROM ?? "Nexgen Website <onboarding@resend.dev>",
+        from: process.env.ENQUIRY_FROM ?? "Nexgen Pharma Website <website@nexgenpharma.co.in>",
         to: opts.to,
         reply_to: opts.replyTo,
         subject: opts.subject,
