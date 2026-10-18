@@ -20,6 +20,7 @@ export default async function ContactPage({ searchParams }: Props) {
     ...site.phones.map((p) => ({ icon: Phone, label: "Call", value: p.display, href: `tel:${p.tel}` })),
     { icon: MessageCircle, label: "WhatsApp", value: site.phones[0].display, href: whatsappLink("Hello Nexgen Pharma, I have a requirement.") },
     { icon: Mail, label: "Email", value: site.email, href: `mailto:${site.email}` },
+    { icon: Mail, label: "Email (alternate)", value: site.altEmail, href: `mailto:${site.altEmail}` },
   ];
 
   return (

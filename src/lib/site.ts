@@ -4,8 +4,9 @@ export const site = {
   tagline: "Engineering Excellence. Compliance Assured.",
   description:
     "Instrument calibration, HVAC validation, equipment qualification, pharma-grade materials and in-house SS fabrication for pharmaceutical plants across Telangana & Andhra Pradesh.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nexgen-pharma.vercel.app",
-  email: "nexgenpharmaenterprises@gmail.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.nexgenpharma.co.in",
+  email: "support@nexgenpharma.co.in",
+  altEmail: "nexgenpharmaenterprises@gmail.com",
   phones: [
     { display: "+91 89785 49019", tel: "+918978549019" },
     { display: "+91 63058 35563", tel: "+916305835563" },

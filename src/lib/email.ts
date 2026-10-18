@@ -4,7 +4,7 @@ import { site } from "./site";
 export const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export const adminInbox = () => (process.env.ENQUIRY_TO ?? site.email).split(",").map((s) => s.trim());
+export const adminInbox = () => (process.env.ENQUIRY_TO ?? `${site.email},${site.altEmail}`).split(",").map((s) => s.trim());
 
 /** Sends via Resend when RESEND_API_KEY is set. Returns true if delivered. */
 export async function sendEmail(opts: { to: string[]; subject: string; html: string; replyTo?: string }) {

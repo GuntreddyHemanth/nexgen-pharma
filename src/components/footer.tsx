@@ -70,6 +70,12 @@ export async function Footer() {
                 {site.email}
               </a>
             </li>
+            <li className="flex gap-3">
+              <Mail className="mt-0.5 size-4 shrink-0 text-leaf-400" aria-hidden />
+              <a href={`mailto:${site.altEmail}`} className="break-all hover:text-white">
+                {site.altEmail}
+              </a>
+            </li>
           </ul>
         </div>
       </div>

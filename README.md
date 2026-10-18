@@ -39,10 +39,10 @@ Once the database is connected, edit everything from `/admin`. The files below a
 | `ADMIN_PASSWORD` | Password for `/admin`. Use a long one. |
 | `SESSION_SECRET` | Random string, 32+ characters, used to sign login cookies. |
 | `CRON_SECRET` | Random string; Vercel sends it to the daily reminder job (`/api/cron/reminders`). |
-| `NEXT_PUBLIC_SITE_URL` | Live URL, e.g. `https://nexgenpharma.in` (used for SEO, sitemap) |
+| `NEXT_PUBLIC_SITE_URL` | Optional override of the live URL (default `https://www.nexgenpharma.co.in`) (used for SEO, sitemap) |
 | `RESEND_API_KEY` | Enables enquiry/RFQ emails (free at resend.com). Without it, forms still work and offer WhatsApp hand-off. |
-| `ENQUIRY_TO` | Inbox for leads (comma-separated). Defaults to the Gmail in `site.ts`. |
-| `ENQUIRY_FROM` | Sender, e.g. `Nexgen Website <website@nexgenpharma.in>` (after verifying the domain in Resend). |
+| `ENQUIRY_TO` | Inbox for leads (comma-separated). Defaults to both emails in `site.ts`. |
+| `ENQUIRY_FROM` | Sender, e.g. `Nexgen Website <website@nexgenpharma.co.in>` (after verifying the domain in Resend). |
 
 ## Deploy to Vercel (free)
 
