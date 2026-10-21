@@ -50,7 +50,7 @@ export default async function Home() {
           <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-brand-100 backdrop-blur">
               <span className="size-1.5 rounded-full bg-leaf-400 shadow-[0_0_10px_2px] shadow-leaf-400/60" />
-              Engineering &amp; material partner to pharma plants in Telangana &amp; AP
+              Nexgen Pharma Enterprises · Engineering &amp; material partner to pharma plants in Telangana &amp; AP
             </span>
             <h1 className="mt-6 text-[2.6rem] font-extrabold leading-[1.04] sm:text-6xl lg:text-[4.2rem]">
               Compliance can&apos;t be compromised.{" "}

@@ -10,7 +10,10 @@ export const revalidate = 300;
 const jsonLd = (services: Awaited<ReturnType<typeof getServices>>) => ({
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
+  "@id": `${site.url}/#organization`,
   name: site.name,
+  alternateName: ["Nexgen Pharma", "Nexgen Pharma Enterprises", "NexGen Pharma Hyderabad"],
+  image: `${site.url}/brand/card.jpg`,
   slogan: site.tagline,
   description: site.description,
   url: site.url,
